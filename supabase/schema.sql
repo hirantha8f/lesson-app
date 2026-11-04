@@ -62,6 +62,29 @@ create policy "members read classroom" on classrooms
 create policy "self profile" on profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
+-- Audit run-2 resolution: classroom co-members may READ each other's
+-- display profiles so teacher member lists show names (was: self-only,
+-- which made PostgREST profile embeds return null for classmates).
+create policy "classroom co-members read profiles" on profiles
+  for select using (
+    exists (
+      select 1 from memberships mine
+      join memberships theirs on theirs.classroom_id = mine.classroom_id
+      where mine.student_id = auth.uid() and theirs.student_id = profiles.id
+    )
+    or exists (
+      select 1 from classrooms c
+      where c.teacher_id = auth.uid()
+        and exists (select 1 from memberships m
+          where m.classroom_id = c.id and m.student_id = profiles.id)
+    )
+    or exists (
+      select 1 from memberships m
+      join classrooms c on c.id = m.classroom_id
+      where m.student_id = auth.uid() and c.teacher_id = profiles.id
+    )
+  );
+
 create policy "member read memberships" on memberships
   for select using (
     student_id = auth.uid()

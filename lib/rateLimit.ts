@@ -39,10 +39,21 @@ export function checkRateLimit(key: string, limit: number, windowMs: number): {
   return { ok: true, retryAfterSec: 0 };
 }
 
-export function clientIp(req: Request): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim();
-  return req.headers.get("x-real-ip")?.trim() || "unknown";
+export function clientIp(req: Request & { ip?: string | null }): string {
+  // Audit run-2 resolution: never trust forwarding headers by default.
+  // Prefer the platform-provided client IP (Vercel sets NextRequest.ip and
+  // x-vercel-forwarded-for, which clients cannot spoof). Only when the app
+  // is deliberately deployed behind a trusted proxy may the operator set
+  // TRUST_PROXY=1 to honour x-forwarded-for / x-real-ip.
+  const platformIp =
+    req.ip?.trim() || req.headers.get("x-vercel-forwarded-for")?.split(",")[0].trim();
+  if (platformIp) return platformIp;
+  if (process.env.TRUST_PROXY === "1") {
+    const fwd = req.headers.get("x-forwarded-for");
+    if (fwd) return fwd.split(",")[0].trim();
+    return req.headers.get("x-real-ip")?.trim() || "unknown";
+  }
+  return "unknown";
 }
 
 // Full caller authentication (Supabase JWT) is the follow-up once the

@@ -25,7 +25,7 @@ Rules:
 - quiz: 4-6 MCQs, 4 options each, one correct. Each needs: why-correct explanation, the common misconception it targets, a traceHint (which trace step disproves the wrong answers), and the CT skill it checks (one short phrase from the file's concepts).
 - remix: one creative "break it / extend it" challenge with a checkable success criterion.
 - teacher: 3 objectives (Bloom verbs), 3-5 vocab terms, 1 discussion prompt.
-- continuity: if "Learner history" is provided below, reuse its story elements (characters/setting) in the hook and analogy, include one explicit callback to a previous session, and NEVER invent past events not in the history. If no history is provided, seed ONE memorable story element (a character or setting) and name it in the hook so future lessons can continue it.
+- continuity: if "Learner history" is provided below, reuse its story elements (characters/setting) in the hook and analogy, include one explicit callback to a previous session, and NEVER invent past events not in the history. If the history lists open misconceptions, at least one quiz question MUST target one of them as a retrieval check. If no history is provided, seed ONE memorable story element (a character or setting) and name it in the hook so future lessons can continue it.
 
 Respond with ONLY valid JSON matching this exact shape, no fences, no preamble:
 

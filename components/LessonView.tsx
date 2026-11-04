@@ -11,7 +11,7 @@ import Playground from "./Playground";
 import Parsons from "./Parsons";
 
 export default function LessonView({
-  filename, lesson, sourceLabel, difficulty, onDifficulty, onXP, onOutcome, onDialogueResolve, xp, streak,
+  filename, lesson, sourceLabel, difficulty, onDifficulty, onXP, onOutcome, onDialogueResolve, onDialogueStuck, xp, streak,
 }: {
   filename: string;
   lesson: Lesson;
@@ -21,6 +21,7 @@ export default function LessonView({
   onXP: (n: number) => void;
   onOutcome?: (skill: string, success: boolean, misconception?: string) => void;
   onDialogueResolve?: (skill: string) => void;
+  onDialogueStuck?: (skill: string) => void;
   xp: number;
   streak: number;
 }) {
@@ -97,8 +98,8 @@ export default function LessonView({
           <Tracer steps={lesson.traceSteps} />
 
           <h3>Do it</h3>
-          <Playground spec={lesson.playground} onXP={onXP} />
-          <Parsons lines={lesson.parsons?.lines} instructions={lesson.parsons?.instructions} onXP={onXP} />
+          <Playground spec={lesson.playground} onXP={onXP} onOutcome={onOutcome} skill={lesson.concepts[0]?.title} />
+          <Parsons lines={lesson.parsons?.lines} instructions={lesson.parsons?.instructions} onXP={onXP} onOutcome={onOutcome} skill={lesson.concepts[0]?.title} />
 
           <h3>Walkthrough</h3>
           <p style={{ whiteSpace: "pre-wrap" }}>{lesson.walkthrough}</p>
@@ -112,6 +113,7 @@ export default function LessonView({
               onCorrect={(skill) => { onXP(10); if (skill) onOutcome?.(skill, true); }}
               onWrong={(skill, misconception) => { if (skill) onOutcome?.(skill, false, misconception); }}
               onDialogueResolve={(skill) => { onXP(10); onDialogueResolve?.(skill); }}
+              onDialogueStuck={(skill) => onDialogueStuck?.(skill)}
             />
           ))}
 

@@ -14,7 +14,7 @@ import {
   type LearnerProfile,
 } from "@/lib/profile";
 import { loadPersona, savePersona, type Persona } from "@/lib/persona";
-import { accessToken, syncLearnerModel } from "@/lib/supabase";
+import { accessToken, pushLearnerModel, syncLearnerModel } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import {
   emptyLearnerModel,
@@ -98,6 +98,16 @@ export default function Home() {
     }
   }, []);
 
+  // Persist locally always; push to Supabase when signed in (durable model).
+  const persistModel = useCallback(
+    (m: LearnerModel) => {
+      saveLocalModel(m);
+      setLearner(m);
+      if (user) pushLearnerModel(user.id, m).catch(() => { /* best effort */ });
+    },
+    [user]
+  );
+
   const request = useCallback(
     async (payload: Record<string, unknown>, label: string) => {
       setError(null);
@@ -127,8 +137,11 @@ export default function Home() {
             at: new Date().toISOString(),
             callback: data.lesson.hook ?? data.lesson.fileSummary ?? "",
           };
-          saveLocalModel(seeded);
-          setLearner(seeded);
+          // Narrative continuity: the running scenario advances each chapter.
+          if (data.lesson.hook) {
+            seeded.narrative = { ...seeded.narrative, runningScenario: data.lesson.hook };
+          }
+          persistModel(seeded);
         }
       } catch (e: any) {
         setError(e.message ?? "Failed to generate lesson.");
@@ -136,7 +149,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [profile, difficulty, learner]
+    [profile, difficulty, learner, persistModel]
   );
 
   // Session outcome -> learner model -> journey refresh, no reload.
@@ -151,17 +164,15 @@ export default function Home() {
         });
         const data = await res.json();
         if (!res.ok || !data.model) throw new Error("outcome failed");
-        saveLocalModel(data.model);
-        setLearner(data.model);
+        persistModel(data.model);
         if (success) recordQuizProgress(`lesson:${filename ?? "unknown"}`, 10);
       } catch {
         let next = recordOutcome(learner, { skill, success });
         if (!success && misconception) next = logMisconception(next, skill, misconception);
-        saveLocalModel(next);
-        setLearner(next);
+        persistModel(next);
       }
     },
-    [learner]
+    [learner, persistModel, filename]
   );
 
   // Dialogue resolution: correct follow-up resolves the linked misconception.
@@ -176,16 +187,14 @@ export default function Home() {
         });
         const data = await res.json();
         if (!res.ok || !data.model) throw new Error("outcome failed");
-        saveLocalModel(data.model);
-        setLearner(data.model);
+        persistModel(data.model);
       } catch {
         const { resolveDialogue } = await import("@/lib/learnerModel");
         const next = resolveDialogue(learner, skill);
-        saveLocalModel(next);
-        setLearner(next);
+        persistModel(next);
       }
     },
-    [learner]
+    [learner, persistModel]
   );
 
   const handleRoulette = useCallback(
@@ -297,7 +306,7 @@ export default function Home() {
 
               <ProfilerForm value={profile} onChange={updateProfile} />
 
-              <JourneyMap model={learner} streak={streak} />
+              <JourneyMap model={learner} streak={streak} age={profile.age} />
               <StudentClasses user={user} />
 
               <div className="tabs" role="tablist">
@@ -370,6 +379,7 @@ export default function Home() {
                   onXP={bumpXP}
                   onOutcome={handleOutcome}
                   onDialogueResolve={handleDialogueResolve}
+                  onDialogueStuck={(skill) => handleOutcome(skill, false)}
                   xp={xp}
                   streak={streak}
                 />

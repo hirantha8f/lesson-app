@@ -45,8 +45,14 @@ export function nextUp(m: LearnerModel): NextUp {
   return { kind: "weakest", skill: weakest, note: `Up next: ${weakest} (${levelFor(m, weakest)})` };
 }
 
-export default function JourneyMap({ model, streak }: { model: LearnerModel; streak: number }) {
+export default function JourneyMap({ model, streak, age }: { model: LearnerModel; streak: number; age?: number }) {
   const rec = nextUp(model);
+  const starter =
+    rec.kind === "starter" && typeof age === "number"
+      ? age <= 12
+        ? "Start your quest: spin the wheel for a starter adventure!"
+        : "Start your quest: spin the wheel or drop a code file for lesson one!"
+      : rec.note;
   return (
     <div className="panel">
       <div className="btnrow" style={{ justifyContent: "space-between", marginTop: 0 }}>
@@ -60,7 +66,7 @@ export default function JourneyMap({ model, streak }: { model: LearnerModel; str
           </span>
         ))}
       </div>
-      <p className="analogy">Next: {rec.note}</p>
+      <p className="analogy">Next: {starter}</p>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ACTIVITIES, pickActivity, type Activity } from "@/lib/activities";
-import { nextUp } from "./JourneyMap";
+import JourneyMap, { nextUp } from "./JourneyMap";
 import type { LearnerModel } from "@/lib/learnerModel";
 import RobotRunner from "./RobotRunner";
 
@@ -19,13 +19,23 @@ export default function ParentPath({ model, streak }: { model?: LearnerModel; st
   return (
     <div>
       {model && hasHistory && (
-        <div className="panel">
-          <strong>Tonight{streak ? ` (day ${streak})` : ""}: {nextUp(model).note}</strong>
-          <p className="muted">
-            Co-play tip: let them explain each step out loud before touching anything —
-            explaining is where the learning sticks.
-          </p>
-        </div>
+        <>
+          <JourneyMap model={model} streak={streak ?? 0} age={age} />
+          <div className="panel">
+            <strong>Tonight{streak ? ` (day ${streak})` : ""}: {nextUp(model).note}</strong>
+            {model.narrative.characters.length > 0 && (
+              <p className="muted">
+                Story so far: {model.narrative.characters.join(", ")}
+                {model.narrative.setting ? ` in ${model.narrative.setting}` : ""}.{" "}
+                {model.narrative.runningScenario}
+              </p>
+            )}
+            <p className="muted">
+              Co-play tip: let them explain each step out loud before touching anything —
+              explaining is where the learning sticks.
+            </p>
+          </div>
+        </>
       )}
       <div className="panel">
         <div className="btnrow">

@@ -102,6 +102,12 @@ export default function TeacherPath({ model }: { model?: LearnerModel }) {
                 <p className="muted">
                   Practicing: {allSkills().filter((s) => levelFor(model, s) === "practicing").join(", ") || "—"}
                 </p>
+                {model.narrative.characters.length > 0 && (
+                  <p className="muted">
+                    Story world: {model.narrative.characters.join(", ")}
+                    {model.narrative.setting ? ` in ${model.narrative.setting}` : ""} — reference it when you set the starter.
+                  </p>
+                )}
               </>
             );
           })()}

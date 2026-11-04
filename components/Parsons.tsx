@@ -13,11 +13,13 @@ function shuffle<T>(xs: T[]): T[] {
 
 // Faded-Parsons-lite (research-backed): reorder scrambled lines.
 export default function Parsons({
-  lines, instructions, onXP,
+  lines, instructions, onXP, onOutcome, skill,
 }: {
   lines?: string[];
   instructions?: string;
   onXP: (n: number) => void;
+  onOutcome?: (skill: string, success: boolean) => void;
+  skill?: string;
 }) {
   const solution = useMemo(() => (lines ?? []).filter((l) => l.trim()), [lines]);
   const shuffled = useMemo(() => shuffle(solution), [solution]);
@@ -37,8 +39,11 @@ export default function Parsons({
 
   const check = () => {
     const ok = current.every((l, i) => l === solution[i]);
+    if (done !== ok) {
+      if (ok) onXP(15);
+      if (skill) onOutcome?.(skill, ok);
+    }
     setDone(ok);
-    if (ok) onXP(15);
   };
 
   return (

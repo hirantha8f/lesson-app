@@ -26,24 +26,19 @@ export function llmProvider(): string {
 }
 
 // Cheap-model Socratic path (tutor-dialogue capability): short guiding
-// turns served away from the primary generation model. Falls back to the
-// primary provider/model when no dialogue-specific config is set.
+// turns served ONLY by a dialogue-specific small model, never the primary
+// generation model (spec). When no dialogue model is configured the call
+// fails and the client falls back to static hints.
 export const TUTOR_SYSTEM_PROMPT = `You are a patient tutor helping a learner who just answered a quiz question incorrectly.
 Ask EXACTLY ONE short guiding question that leads them toward the correct answer.
 Rules: never state or hint at the correct option letter; never give the answer; keep it to 1-2 sentences; end with the question.`;
 
-export function dialogueModel(): string {
+export function dialogueModel(): string | null {
   const provider = process.env.LLM_DIALOGUE_PROVIDER ?? llmProvider();
   if (provider === "baseten") {
-    // Default to the account's known-good model slug; override with a
-    // smaller/cheaper slug via BASETEN_DIALOGUE_MODEL when available.
-    return (
-      process.env.BASETEN_DIALOGUE_MODEL ??
-      process.env.BASETEN_MODEL ??
-      "baseten/deepseek-ai/DeepSeek-V4.1-Flash"
-    );
+    return process.env.BASETEN_DIALOGUE_MODEL ?? null;
   }
-  return process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4.6";
+  return process.env.OPENROUTER_DIALOGUE_MODEL ?? null;
 }
 
 export async function dialogueCompletion(userContent: string): Promise<string> {
@@ -55,6 +50,13 @@ export async function dialogueCompletion(userContent: string): Promise<string> {
   const key =
     provider === "baseten" ? process.env.BASETEN_API_KEY : process.env.OPENROUTER_API_KEY;
   if (!key) throw new LLMError("Server missing dialogue API key.", 500);
+  const model = dialogueModel();
+  if (!model) {
+    throw new LLMError(
+      "Dialogue model not configured (set BASETEN_DIALOGUE_MODEL or OPENROUTER_DIALOGUE_MODEL).",
+      500
+    );
+  }
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${key}`,
@@ -66,7 +68,7 @@ export async function dialogueCompletion(userContent: string): Promise<string> {
       headers,
       signal: AbortSignal.timeout(30_000),
       body: JSON.stringify({
-        model: dialogueModel(),
+        model,
         // Reasoning models need headroom: thinking + final answer must fit.
         max_tokens: 4000,
         messages: [

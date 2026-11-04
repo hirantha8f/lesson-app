@@ -9,10 +9,12 @@ import type { PlaygroundSpec } from "@/lib/prompt";
 // Never executes the full uploaded file — only the small starterCode excerpt
 // (Suggestion 5: safety).
 export default function Playground({
-  spec, onXP,
+  spec, onXP, onOutcome, skill,
 }: {
   spec?: PlaygroundSpec;
   onXP: (n: number) => void;
+  onOutcome?: (skill: string, success: boolean) => void;
+  skill?: string;
 }) {
   const [code, setCode] = useState(spec?.starterCode ?? "");
   const [output, setOutput] = useState("");
@@ -37,6 +39,7 @@ export default function Playground({
       if (ret !== undefined) logs.push(String(ret));
       setOutput(logs.join("\n") || "(no output — try console.log something!)");
       onXP(10);
+      if (skill) onOutcome?.(skill, true);
     } catch (e: any) {
       setOutput(`Error: ${e.message}`);
     }

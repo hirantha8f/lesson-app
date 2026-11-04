@@ -4,18 +4,20 @@ import { useEffect, useState } from "react";
 import type { LessonQuizQuestion } from "@/lib/prompt";
 
 export default function QuizBlock({
-  q, index, onCorrect, onWrong, onDialogueResolve,
+  q, index, onCorrect, onWrong, onDialogueResolve, onDialogueStuck,
 }: {
   q: LessonQuizQuestion;
   index: number;
   onCorrect?: (skill?: string) => void;
   onWrong?: (skill?: string, misconception?: string) => void;
   onDialogueResolve?: (skill: string) => void;
+  onDialogueStuck?: (skill: string) => void;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
   const [followup, setFollowup] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
   const [resolved, setResolved] = useState<boolean | null>(null);
+  const [showExplain, setShowExplain] = useState(false);
 
   // Socratic follow-up on wrong answers; static hint remains the fallback.
   useEffect(() => {
@@ -65,7 +67,11 @@ export default function QuizBlock({
       })}
       {picked !== null && (
         <div style={{ marginTop: 8 }}>
-          <p style={{ opacity: 0.9 }}>{q.explanation}</p>
+          {/* Spec: on a wrong answer the Socratic follow-up comes first;
+              the explanation is revealed after the learner engages with it. */}
+          {(!wrong || resolved !== null || showExplain) && (
+            <p style={{ opacity: 0.9 }}>{q.explanation}</p>
+          )}
           {wrong && (q.misconception || q.traceHint) && (
             <div className="hint">
               {q.misconception && <p><strong>Common trap:</strong> {q.misconception}</p>}
@@ -83,9 +89,19 @@ export default function QuizBlock({
                 >
                   Got it!
                 </button>
-                <button onClick={() => setResolved(false)} type="button">Still stuck</button>
+                <button
+                  onClick={() => { setResolved(false); if (q.skill) onDialogueStuck?.(q.skill); }}
+                  type="button"
+                >
+                  Still stuck
+                </button>
               </div>
             </div>
+          )}
+          {wrong && resolved === null && !showExplain && (
+            <button className="linkbtn" onClick={() => setShowExplain(true)} type="button">
+              Reveal explanation
+            </button>
           )}
           {wrong && resolved === true && <p className="good">Nice recovery! +10 XP</p>}
           {picked === q.correctIndex && <p className="good">+10 XP</p>}

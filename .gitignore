@@ -40,3 +40,5 @@ next-env.d.ts
 
 # marimo bridge: generated lesson/guide/activity JSON (local runtime data)
 notebooks/generated/
+
+__pycache__/

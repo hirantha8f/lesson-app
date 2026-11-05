@@ -60,14 +60,17 @@ export default function MarimoPage() {
             </div>
           ) : (
             <div className="panel">
-              <h3 style={{ marginTop: 0 }}>Run the lab locally</h3>
-              <pre><code>{`python -m pip install -r notebooks/requirements.txt
-python -m marimo run notebooks/`}</code></pre>
-              <p className="muted">
-                Then set <code>NEXT_PUBLIC_MARIMO_URL</code> to the marimo server
-                URL and this page embeds the gallery here. For a static deploy,
-                export any notebook with <code>marimo export html-wasm</code> and
-                host the output as plain files.
+              <iframe
+                src="/marimo/index.html"
+                title="Marimo interactive lab (static export)"
+                style={{ width: "100%", height: 720, border: 0, borderRadius: 12 }}
+              />
+              <p className="muted" style={{ marginTop: 10 }}>
+                This is the self-contained static export: it runs entirely in your
+                browser. The generated-content notebooks show sample lessons here;
+                for your own generated lessons, run the marimo server locally
+                (<code>npm run marimo:gallery</code>) and set{" "}
+                <code>NEXT_PUBLIC_MARIMO_URL</code> to embed it instead.
               </p>
             </div>
           )}

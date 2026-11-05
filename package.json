@@ -11,6 +11,7 @@
     "start": "next start",
     "marimo:gallery": "python -m marimo run notebooks/",
     "marimo:edit": "python -m marimo edit notebooks/",
+    "marimo:export": "python -m marimo export html-wasm notebooks/00_primer_home.py notebooks/01_student_lab.py notebooks/02_teacher_studio.py notebooks/03_parent_playground.py notebooks/10_generated_lesson.py notebooks/11_generated_guide.py notebooks/12_generated_parent.py -o public/marimo --mode run",
     "marimo:check": "python -m marimo check notebooks/00_primer_home.py notebooks/01_student_lab.py notebooks/02_teacher_studio.py notebooks/03_parent_playground.py"
   },
   "dependencies": {

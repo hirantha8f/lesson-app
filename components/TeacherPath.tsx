@@ -174,7 +174,10 @@ export default function TeacherPath({ model }: { model?: LearnerModel }) {
 
           <div className="panel">
             <p className="muted">Classroom invites (Supabase) land next: create a class, share a code, assign this guide, watch progress.</p>
-            <button onClick={() => window.print()} type="button">Print guide</button>
+            <button onClick={() => window.print()} type="button">Print guide</button>{" "}
+            <a href={process.env.NEXT_PUBLIC_MARIMO_URL ?? "/marimo"} target="_blank" rel="noreferrer">
+              <button type="button">Open in Marimo</button>
+            </a>
           </div>
         </section>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ACTIVITIES, pickActivity, type Activity } from "@/lib/activities";
 import JourneyMap, { nextUp } from "./JourneyMap";
 import type { LearnerModel } from "@/lib/learnerModel";
@@ -13,6 +13,16 @@ export default function ParentPath({ model, streak }: { model?: LearnerModel; st
   const [activity, setActivity] = useState<Activity | null>(null);
 
   const surprise = () => setActivity(pickActivity(age, minutes));
+
+  // Marimo bridge: the chosen activity appears in notebooks/12.
+  useEffect(() => {
+    if (!activity) return;
+    fetch("/api/marimo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "parent", data: activity }),
+    }).catch(() => { /* bridge is best-effort */ });
+  }, [activity]);
 
   const hasHistory = !!model && (Object.keys(model.mastery).length > 0 || model.misconceptions.length > 0);
 
@@ -84,6 +94,11 @@ export default function ParentPath({ model, streak }: { model?: LearnerModel; st
             </ul>
           </div>
           <p className="analogy">They just learned: {activity.learned}</p>
+          <p>
+            <a href={process.env.NEXT_PUBLIC_MARIMO_URL ?? "/marimo"} target="_blank" rel="noreferrer">
+              <button type="button">Open tonight's game in Marimo</button>
+            </a>
+          </p>
           {device !== "none" && activity.robot && <RobotRunner challenge={activity.robot} />}
           {device !== "none" && !activity.robot && (
             <p className="muted">No plugged extra for this one — the unplugged game is the whole lesson.</p>

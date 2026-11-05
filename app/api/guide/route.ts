@@ -9,6 +9,7 @@ import { buildLearnerSummary, type LearnerModel } from "@/lib/learnerModel";
 import { checkRateLimit, clientIp, GUIDE_LIMIT, AUTH_GUIDE_LIMIT } from "@/lib/rateLimit";
 import { getServerUserId } from "@/lib/supabaseServer";
 import { sanitizeGuide } from "@/lib/validate";
+import { saveGenerated } from "@/lib/marimoStore";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -63,6 +64,9 @@ export async function POST(req: Request) {
     } catch {
       return Response.json({ error: "Model returned invalid JSON. Try again." }, { status: 502 });
     }
+    // Marimo bridge: the generated guide appears in notebooks/11.
+    await saveGenerated("guide", { topic: getTopic(topicId), guide });
+
     return Response.json({ guide, topic: getTopic(topicId), provider: llmProvider() });
   } catch (err: any) {
     return Response.json({ error: err?.message ?? "Unknown error" }, { status: 500 });

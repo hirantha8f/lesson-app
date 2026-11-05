@@ -37,3 +37,6 @@ next-env.d.ts
 .taste-skill/
 .opencode/
 .agents/
+
+# marimo bridge: generated lesson/guide/activity JSON (local runtime data)
+notebooks/generated/

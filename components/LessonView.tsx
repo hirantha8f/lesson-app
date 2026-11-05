@@ -128,6 +128,9 @@ export default function LessonView({
 
           <div className="btnrow" style={{ marginTop: 20 }}>
             <button onClick={() => download(false)} type="button">Download .md</button>
+            <a href={process.env.NEXT_PUBLIC_MARIMO_URL ?? "/marimo"} target="_blank" rel="noreferrer">
+              <button type="button">Open in Marimo</button>
+            </a>
           </div>
         </>
       ) : (

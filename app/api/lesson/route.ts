@@ -7,6 +7,7 @@ import { buildLearnerSummary, type LearnerModel } from "@/lib/learnerModel";
 import { checkRateLimit, clientIp, LESSON_LIMIT, AUTH_LESSON_LIMIT } from "@/lib/rateLimit";
 import { getServerUserId } from "@/lib/supabaseServer";
 import { clampStr, sanitizeDifficulty, sanitizeProfile } from "@/lib/validate";
+import { saveGenerated } from "@/lib/marimoStore";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -109,6 +110,9 @@ export async function POST(req: Request) {
     } catch {
       return Response.json({ error: "Model returned invalid JSON. Try again." }, { status: 502 });
     }
+
+    // Marimo bridge: the generated lesson appears in notebooks/10.
+    await saveGenerated("lesson", { filename, lesson });
 
     return Response.json({
       lesson,

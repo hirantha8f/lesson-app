@@ -38,6 +38,19 @@ import ParentPath from "@/components/ParentPath";
 
 type Tab = "roulette" | "github" | "upload";
 
+// Parse an API response without leaking raw SyntaxErrors when the server
+// returns an HTML error page (stale dev cache, proxy error, deploy hiccup).
+async function parseJsonResponse(res: Response): Promise<any> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(
+      `Server returned an unexpected response (${res.status}). If you just ran a build, restart the dev server and try again.`
+    );
+  }
+}
+
 export default function Home() {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [tab, setTab] = useState<Tab>("roulette");
@@ -122,7 +135,7 @@ export default function Home() {
           headers,
           body: JSON.stringify({ ...payload, profile, difficulty: payload.difficulty ?? difficulty, learner }),
         });
-        const data = await res.json();
+        const data = await parseJsonResponse(res);
         if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
         setLesson(data.lesson);
         setFilename(data.filename);

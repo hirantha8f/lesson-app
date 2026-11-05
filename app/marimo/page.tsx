@@ -1,24 +1,28 @@
 const NOTEBOOKS = [
   {
     id: "00_primer_home",
+    file: "primer-home.html",
     title: "Primer home",
     audience: "Everyone",
     blurb: "Pick a persona, age and interest. Your next step changes with you.",
   },
   {
     id: "01_student_lab",
+    file: "student-lab.html",
     title: "Student lab",
     audience: "Students",
     blurb: "Predict first, then watch quicksort, bubble sort and binary search move.",
   },
   {
     id: "02_teacher_studio",
+    file: "teacher-studio.html",
     title: "Teacher studio",
     audience: "Teachers",
     blurb: "Topic, level and minutes in; objectives, misconception, exam question and mark scheme out.",
   },
   {
     id: "03_parent_playground",
+    file: "parent-playground.html",
     title: "Parent playground",
     audience: "Parents",
     blurb: "One unplugged game plus a robot route to debug together, in ten minutes.",
@@ -61,7 +65,7 @@ export default function MarimoPage() {
           ) : (
             <div className="panel">
               <iframe
-                src="/marimo/index.html"
+                src="/marimo/primer-home.html"
                 title="Marimo interactive lab (static export)"
                 style={{ width: "100%", height: 720, border: 0, borderRadius: 12 }}
               />
@@ -81,7 +85,10 @@ export default function MarimoPage() {
                 <strong>{n.title}</strong>
                 <p className="faint">{n.audience}</p>
                 <p className="muted">{n.blurb}</p>
-                <code>{`${n.id}.py`}</code>
+                <code>{`${n.id}.py`}</code>{" "}
+                <a className="linkbtn" href={`/marimo/${n.file}`} target="_blank" rel="noreferrer">
+                  Open notebook
+                </a>
               </div>
             ))}
           </div>

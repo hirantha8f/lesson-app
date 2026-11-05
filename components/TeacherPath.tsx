@@ -27,7 +27,13 @@ export default function TeacherPath({ model }: { model?: LearnerModel }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topicId, level, minutes }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Server returned an unexpected response (${res.status}). Restart the dev server and try again.`);
+      }
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
       setGuide(data.guide);
     } catch (e: any) {
